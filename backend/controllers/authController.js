@@ -30,14 +30,14 @@ export const register = async (req, res) => {
       return sendError(res, 400, "All fields (username, email, password) are required");
     }
 
-    // ✅ Only check if email already exists (NOT username)
+    // Check if email or username already exists
     const { rows: existingUsers } = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
+      "SELECT * FROM users WHERE email = $1 OR username = $2",
+      [email, username]
     );
 
     if (existingUsers.length > 0) {
-      return sendError(res, 409, "User with this email already exists");
+      return sendError(res, 409, "User with this email or username already exists");
     }
 
     // Hash password
@@ -55,12 +55,12 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "✅ Registration successful",
+      message: "Registration successful",
       user,
     });
   } catch (err) {
-    console.error("Register error:", err);
-    return sendError(res, 500, err.message || "Internal server error during registration");
+    console.error("Register error:", err.message);
+    return sendError(res, 500, "Internal server error during registration");
   }
 };
 
@@ -75,7 +75,7 @@ export const login = async (req, res) => {
 
     const user = rows[0];
 
-    // Compare password
+    // faster comparison
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return sendError(res, 401, "Invalid password");
 
@@ -83,12 +83,12 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "🎉 Login successful",
+      message: "Login successful",
       token,
       user: { id: user.id, username: user.username, email: user.email, role: user.role },
     });
   } catch (err) {
-    console.error("Login error:", err);
-    return sendError(res, 500, err.message || "Internal server error during login");
+    console.error("Login error:", err.message);
+    return sendError(res, 500, "Internal server error during login");
   }
 };
