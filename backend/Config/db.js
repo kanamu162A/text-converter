@@ -7,7 +7,7 @@ dotenv.config();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false,
+    rejectUnauthorized: false,  // Required for Supabase
   },
 });
 
@@ -16,7 +16,7 @@ pool.connect((err, client, release) => {
     console.log("✅ Database Connected Successfully..");
     release();
   } else {
-    console.error("❌ Fail to connect to database:", err.message);
+    console.error("❌ Fail to connect to database:", err);
   }
 });
 
