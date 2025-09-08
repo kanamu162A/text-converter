@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register | Shatova</title>
+  <!-- ✅ No ../, direct path since frontend is static root -->
+<link rel="stylesheet" href="style/login.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="brand">Shatova</div>
+    <div class="tagline">Create your account</div>
+
+    <form id="registerForm">
+      <input type="text" id="username" placeholder="Enter username" required />
+      <input type="email" id="registerEmail" placeholder="Enter your email" required />
+      <div class="password-toggle">
+        <input type="password" id="registerPassword" placeholder="Password" required style="width: 85%;" />
+        <button type="button" onclick="togglePassword('registerPassword', this)">👁</button>
+      </div>
+      <button type="submit" class="submit-btn">Register</button>
+    </form>
+
+    <p id="responseMsg" class="message"></p>
+    <p class="text-link">Already have an account? <a href="login.html">Login</a>
+</p>
+  </div>
+
+  <!-- ✅ Script also direct -->
+<script src="js/register.js"></script>
+</body>
+</html>

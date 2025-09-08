@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shatova Dashboard</title>
+  <link rel="stylesheet" href="style/dashboard.css"/>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-info">
+        <h1>Welcome, <span id="username">Loading...</span> 👋</h1>
+        <p>Role: <span id="role">Loading...</span></p>
+        <p><button id="logoutBtn">Logout</button></p>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button data-tab="profile">👤 Profile</button>
+      <button data-tab="conversions">🔒 Convert</button>
+      <button data-tab="history">📜 History</button>
+      <button data-tab="admin" class="admin-only">🛠 Admin</button>
+      <button data-tab="ceo" class="ceo-only">👑 CEO</button>
+    </nav>
+
+    <!-- Sections -->
+    <div class="tab-content">
+      
+      <!-- Profile -->
+      <section id="profile" class="tab active">
+        <h2>Profile</h2>
+        <p><strong>Name:</strong> <span id="profileUsername"></span></p>
+        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+        <p><strong>Created:</strong> <span id="profileCreated"></span></p>
+        <p><strong>Role:</strong> <span id="profileRole"></span></p>
+      </section>
+
+      <!-- Conversions -->
+      <section id="conversions" class="tab">
+        <h2>Text Converter</h2>
+
+        <!-- Encrypt -->
+        <div id="encodeSection" class="conversion-box">
+          <h3>Encrypt Text</h3>
+          <textarea id="encodeInput" placeholder="Enter text"></textarea>
+          <button id="encodeBtn">🔒 Encrypt</button>
+
+          <div id="encodeResultBox" class="result-box hidden">
+            <div class="copy-box">
+              <span>Token: <span id="binaryOutput"></span></span>
+              <button class="copy-btn" data-target="binaryOutput">📋 Copy</button>
+            </div>
+            <div class="copy-box">
+              <span>PIN: <span id="pinOutput"></span></span>
+              <button class="copy-btn" data-target="pinOutput">📋 Copy</button>
+            </div>
+          </div>
+
+          <button id="switchToDecode" class="switch-btn">Switch to Decrypt 🔓</button>
+        </div>
+
+        <!-- Decrypt -->
+        <div id="decodeSection" class="conversion-box hidden">
+          <h3>Decrypt Token</h3>
+          <textarea id="decodeBinary" placeholder="Enter token"></textarea>
+          <input type="text" id="decodePin" placeholder="Enter PIN"/>
+          <input type="text" id="decodeLangs" placeholder="Languages (e.g. en, ha, ar)"/>
+          <button id="decodeBtn">🔓 Decrypt</button>
+
+          <div id="decodeResultBox" class="result-box hidden">
+            <label>Decrypted Text:</label>
+            <pre id="decodeResult"></pre>
+            <button class="copy-btn" data-target="decodeResult">📋 Copy</button>
+          </div>
+
+          <button id="switchToEncode" class="switch-btn">Switch to Encrypt 🔒</button>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section id="history" class="tab">
+        <h2>My History</h2>
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>SN</th>
+              <th>Text</th>
+              <th>Token</th>
+              <th>PIN</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="pagination">
+  <button id="historyPrev">⬅ Previous</button>
+  <span id="historyCurrentPage">1</span>
+  <button id="historyNext">Next ➡</button>
+</div>
+
+      </section>
+
+      <!-- Admin -->
+      <section id="admin" class="tab admin-only">
+        <h2>Admin Panel</h2>
+
+        <h3>Users</h3>
+        <table id="usersTable">
+          <thead>
+            <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Created</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        
+        <h3>Conversions</h3>
+        <table id="adminConversions">
+          <thead>
+            <tr><th>ID</th><th>User</th><th>Token</th><th>Date</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <h3>Audit Logs</h3>
+        <table id="auditLogs">
+          <thead>
+            <tr><th>ID</th><th>Action</th><th>User</th><th>Date</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- CEO -->
+      <section id="ceo" class="tab ceo-only">
+        <h2>CEO Tools</h2>
+        <button id="generateKeyBtn">Generate Master Key</button>
+        <div class="result-box">
+          <p id="masterKeyDisplay"></p>
+          <button class="copy-btn" data-target="masterKeyDisplay">📋 Copy</button>
+        </div>
+
+        <h3>All Conversions</h3>
+        <table id="ceoHistory">
+          <thead>
+            <tr><th>ID</th><th>User</th><th>Text</th><th>Token</th><th>PIN</th><th>Date</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

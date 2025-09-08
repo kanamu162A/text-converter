@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Shatova</title>
+  <link rel="stylesheet" href="style/login.css" />
+
+</head>
+<body>
+
+  <div class="container">
+    <div class="brand">Shatova</div>
+    <div class="tagline">Login to your account</div>
+
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Enter your email" required aria-label="Email" />
+
+      <div class="password-toggle">
+        <input type="password" id="password" placeholder="Password" required aria-label="Password" style="width: 85%;" />
+        <button type="button" onclick="togglePassword()">👁</button>
+      </div>
+      <button type="submit" class="submit-btn">Login</button>
+    </form>
+    <p id="responseMsg" class="message"></p>
+    <p class="text-link">Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+
+  <script src="js/login.js"></script>
+</body>
+</html>
