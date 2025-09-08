@@ -5,9 +5,9 @@ const { Pool } = pkg;
 dotenv.config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Supabase URL
+  connectionString: process.env.DATABASE_URL, // Use Supabase URL
   ssl: {
-    rejectUnauthorized: false, // required for Supabase
+    rejectUnauthorized: false, // required for remote Postgres
   },
 });
 
