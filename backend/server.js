@@ -36,7 +36,7 @@ app.use("/api/shatova/v2/", master_keyRoutes);
 
 
 
-const PORT = process.env.PORT || 8080;
+const PORT = 8080;
 app.listen(PORT, () =>
   console.log(`🚀 Shatova V2 running on http://localhost:${PORT}`)
 );

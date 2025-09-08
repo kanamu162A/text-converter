@@ -8,10 +8,15 @@ const headers = {
 };
 
 async function api(url, options = {}) {
-  const res = await fetch(url, { ...options, headers });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "API Error");
-  return data;
+  try {
+    const res = await fetch(url, { ...options, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "API Error");
+    return data;
+  } catch (err) {
+    console.error(`API request failed: ${url}`, err);
+    throw err;
+  }
 }
 
 // ================= PROFILE =================
@@ -28,12 +33,14 @@ async function loadProfile() {
       new Date(created_at).toLocaleString();
     document.getElementById("role").textContent = role;
 
-    if (role !== "admin")
+    if (role !== "admin") {
       document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
-    if (role !== "ceo")
+    }
+    if (role !== "ceo") {
       document.querySelectorAll(".ceo-only").forEach(el => el.style.display = "none");
+    }
   } catch (err) {
-    console.error("Profile load failed:", err);
+    console.error("Profile load failed:", err.message);
   }
 }
 
@@ -42,21 +49,25 @@ document.getElementById("encodeBtn").addEventListener("click", async () => {
   const text = document.getElementById("encodeInput").value.trim();
   if (!text) return alert("Please enter text to encrypt.");
 
-  document.getElementById("encodeResultBox").classList.remove("hidden");
-  document.getElementById("binaryOutput").textContent = "⏳ Encoding...";
-  document.getElementById("pinOutput").textContent = "⏳";
+  const resultBox = document.getElementById("encodeResultBox");
+  const binaryEl = document.getElementById("binaryOutput");
+  const pinEl = document.getElementById("pinOutput");
+
+  resultBox.classList.remove("hidden");
+  binaryEl.textContent = "⏳ Encoding...";
+  pinEl.textContent = "⏳";
 
   try {
     const data = await api("/api/shatova/v2/conversions/encode", {
       method: "POST",
       body: JSON.stringify({ text })
     });
-    document.getElementById("binaryOutput").textContent = data.binary_output;
-    document.getElementById("pinOutput").textContent = data.pin;
+    binaryEl.textContent = data.binary_output;
+    pinEl.textContent = data.pin;
   } catch (err) {
-    document.getElementById("binaryOutput").textContent = "❌ Error";
-    document.getElementById("pinOutput").textContent = "❌";
-    console.error(err);
+    binaryEl.textContent = "❌ Error";
+    pinEl.textContent = "❌";
+    console.error("Encoding failed:", err.message);
   }
 });
 
@@ -70,6 +81,7 @@ document.getElementById("decodeBtn").addEventListener("click", async () => {
 
   const resultBox = document.getElementById("decodeResultBox");
   const resultEl = document.getElementById("decodeResult");
+
   resultBox.classList.remove("hidden");
   resultEl.textContent = "⏳ Decoding...";
 
@@ -81,7 +93,7 @@ document.getElementById("decodeBtn").addEventListener("click", async () => {
     resultEl.textContent = data.original_text || "❌ Failed to decrypt";
   } catch (err) {
     resultEl.textContent = "❌ Error decoding!";
-    console.error(err);
+    console.error("Decoding failed:", err.message);
   }
 });
 
@@ -90,6 +102,7 @@ document.getElementById("switchToDecode").addEventListener("click", () => {
   document.getElementById("encodeSection").classList.add("hidden");
   document.getElementById("decodeSection").classList.remove("hidden");
 });
+
 document.getElementById("switchToEncode").addEventListener("click", () => {
   document.getElementById("decodeSection").classList.add("hidden");
   document.getElementById("encodeSection").classList.remove("hidden");
@@ -98,50 +111,60 @@ document.getElementById("switchToEncode").addEventListener("click", () => {
 // ================= COPY BUTTON =================
 document.addEventListener("click", e => {
   if (!e.target.classList.contains("copy-btn")) return;
+
   const targetId = e.target.dataset.target;
   const el = document.getElementById(targetId);
   if (!el) return;
+
   navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
     const original = e.target.textContent;
     e.target.textContent = "✅ Copied!";
-    setTimeout(() => e.target.textContent = original, 1500);
-  });
+    setTimeout(() => (e.target.textContent = original), 1500);
+  }).catch(err => console.error("Copy failed:", err));
 });
 
 // ================= HISTORY PAGINATION =================
 let historyPage = 1, historyLimit = 10;
+
 async function loadHistory(page = 1) {
   if (page < 1) page = 1;
   historyPage = page;
 
-  const data = await api(`/api/shatova/v2/admin/history?page=${page}&limit=${historyLimit}`);
-  const tbody = document.querySelector("#historyTable tbody");
-  tbody.innerHTML = "";
-  const totalPages = Math.ceil(data.total / historyLimit);
+  try {
+    const data = await api(`/api/shatova/v2/admin/history?page=${page}&limit=${historyLimit}`);
+    const tbody = document.querySelector("#historyTable tbody");
+    tbody.innerHTML = "";
+    const totalPages = Math.ceil(data.total / historyLimit);
 
-  data.conversions.forEach((h, i) => {
-    tbody.innerHTML += `<tr>
-      <td>${(historyPage - 1) * historyLimit + i + 1}</td>
-      <td>${h.text}</td>
-      <td>${h.binary}</td>
-      <td>${h.pin}</td>
-      <td>${new Date(h.date).toLocaleString()}</td>
-    </tr>`;
-  });
+    data.conversions.forEach((h, i) => {
+      tbody.innerHTML += `<tr>
+        <td>${(historyPage - 1) * historyLimit + i + 1}</td>
+        <td>${h.text}</td>
+        <td>${h.binary}</td>
+        <td>${h.pin}</td>
+        <td>${new Date(h.date).toLocaleString()}</td>
+      </tr>`;
+    });
 
-  document.getElementById("historyCurrentPage").textContent = historyPage;
-  document.getElementById("historyPrev").disabled = historyPage <= 1;
-  document.getElementById("historyNext").disabled = historyPage >= totalPages;
+    document.getElementById("historyCurrentPage").textContent = historyPage;
+    document.getElementById("historyPrev").disabled = historyPage <= 1;
+    document.getElementById("historyNext").disabled = historyPage >= totalPages;
+  } catch (err) {
+    console.error("History load failed:", err.message);
+  }
 }
+
 document.getElementById("historyPrev").addEventListener("click", () => {
   if (historyPage > 1) loadHistory(historyPage - 1);
 });
+
 document.getElementById("historyNext").addEventListener("click", () => {
   loadHistory(historyPage + 1);
 });
 
 // ================= ADMIN PAGINATION =================
 let adminPage = 1, adminLimit = 10;
+
 async function loadAdmin(page = 1) {
   if (page < 1) page = 1;
   adminPage = page;
@@ -153,6 +176,7 @@ async function loadAdmin(page = 1) {
       api(`/api/shatova/v2/admin/audit-logs?page=${page}&limit=${adminLimit}`)
     ]);
 
+    // Users
     const userBody = document.querySelector("#usersTable tbody");
     userBody.innerHTML = "";
     users.users.forEach((u, i) => {
@@ -165,6 +189,7 @@ async function loadAdmin(page = 1) {
       </tr>`;
     });
 
+    // Conversions
     const convBody = document.querySelector("#adminConversions tbody");
     convBody.innerHTML = "";
     convs.conversions.forEach(c => {
@@ -176,6 +201,7 @@ async function loadAdmin(page = 1) {
       </tr>`;
     });
 
+    // Logs
     const logBody = document.querySelector("#auditLogs tbody");
     logBody.innerHTML = "";
     logs.logs.forEach(l => {
@@ -194,30 +220,40 @@ async function loadAdmin(page = 1) {
 
 // ================= CEO PAGINATION =================
 let ceoPage = 1, ceoLimit = 10;
+
 async function loadCEO(page = 1) {
   if (page < 1) page = 1;
   ceoPage = page;
 
-  const data = await api(`/api/shatova/v2/admin/all/history?page=${page}&limit=${ceoLimit}`);
-  const tbody = document.querySelector("#ceoHistory tbody");
-  tbody.innerHTML = "";
-  data.conversions.forEach((h, i) => {
-    tbody.innerHTML += `<tr>
-      <td>${(ceoPage - 1) * ceoLimit + i + 1}</td>
-      <td>${h.user}</td>
-      <td>${h.text}</td>
-      <td>${h.binary}</td>
-      <td>${h.pin}</td>
-      <td>${new Date(h.date).toLocaleString()}</td>
-    </tr>`;
-  });
+  try {
+    const data = await api(`/api/shatova/v2/admin/all/history?page=${page}&limit=${ceoLimit}`);
+    const tbody = document.querySelector("#ceoHistory tbody");
+    tbody.innerHTML = "";
+
+    data.conversions.forEach((h, i) => {
+      tbody.innerHTML += `<tr>
+        <td>${(ceoPage - 1) * ceoLimit + i + 1}</td>
+        <td>${h.user}</td>
+        <td>${h.text}</td>
+        <td>${h.binary}</td>
+        <td>${h.pin}</td>
+        <td>${new Date(h.date).toLocaleString()}</td>
+      </tr>`;
+    });
+  } catch (err) {
+    console.error("CEO history load failed:", err.message);
+  }
 }
 
 // ================= CEO MASTER KEY =================
 document.getElementById("generateKeyBtn").addEventListener("click", async () => {
-  const data = await api("/api/shatova/v2/master-key", { method: "POST" });
-  document.getElementById("masterKeyDisplay").textContent =
-    `Key: ${data.master_key} (expires ${new Date(data.expires_at).toLocaleString()})`;
+  try {
+    const data = await api("/api/shatova/v2/master-key", { method: "POST" });
+    document.getElementById("masterKeyDisplay").textContent =
+      `Key: ${data.master_key} (expires ${new Date(data.expires_at).toLocaleString()})`;
+  } catch (err) {
+    console.error("Failed to generate master key:", err.message);
+  }
 });
 
 // ================= TAB SWITCHING =================

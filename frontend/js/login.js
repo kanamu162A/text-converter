@@ -1,6 +1,11 @@
 const form = document.getElementById("loginForm");
 const messageBox = document.getElementById("responseMsg");
 
+// ✅ Use your deployed API when in production
+const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:8080"
+  : "https://text-converter-se00.onrender.com"; // change to your Render URL
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -11,7 +16,7 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch("http://localhost:8080/api/shatova/v2/auth/login", {
+    const res = await fetch(`${API_BASE_URL}/api/shatova/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
@@ -19,38 +24,38 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
 
-    // Always show backend-provided message
+    // Handle error response from backend
     if (!res.ok) {
-      messageBox.textContent = data.error || "Login failed. Please try again.";
+      messageBox.textContent = data.error || "⚠️ Login failed. Please try again.";
       messageBox.className = "message error";
       return;
     }
 
-    // Success case
-    messageBox.textContent = data.message || "Login successful!";
+    // ✅ Success case
+    messageBox.textContent = data.message || "✅ Login successful!";
     messageBox.className = "message success";
 
-    // Save token + redirect
+    // Save token & redirect
     if (data.token) {
       localStorage.setItem("shatova_token", data.token);
       setTimeout(() => {
         window.location.href = "/dashboard.html";
-      }, 1000);
+      }, 1200);
     }
 
   } catch (error) {
     console.error("Login request failed:", error);
-    messageBox.textContent = "⚠️ Unable to connect to server.";
+    messageBox.textContent = "🚨 Unable to connect to server.";
     messageBox.className = "message error";
   }
 });
 
 // ========================= PASSWORD TOGGLE =========================
-function togglePassword() {
+function togglePassword(event) {
   const passwordField = document.getElementById("password");
   const button = event.target;
 
   const isHidden = passwordField.type === "password";
   passwordField.type = isHidden ? "text" : "password";
-  button.textContent = isHidden ? "🙈" : "👁";
+  button.textContent = isHidden ? "🙈 Hide" : "👁 Show";
 }
