@@ -13,7 +13,7 @@ const generateToken = (user) => {
     { expiresIn: "1d" }
   );
 };
-cxvxnc
+
 const sendError = (res, statusCode, message) => {
   return res.status(statusCode).json({
     success: false,
