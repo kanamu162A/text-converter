@@ -83,6 +83,12 @@
       <!-- History -->
       <section id="history" class="tab">
         <h2>My History</h2>
+
+        <div class="search-bar">
+          <input type="text" id="userSearchInput" placeholder="Search by text, token, or pin" />
+          <button id="userSearchBtn">🔍 Search</button>
+        </div>
+
         <table id="historyTable">
           <thead>
             <tr>
@@ -95,12 +101,12 @@
           </thead>
           <tbody></tbody>
         </table>
-        <div class="pagination">
-  <button id="historyPrev">⬅ Previous</button>
-  <span id="historyCurrentPage">1</span>
-  <button id="historyNext">Next ➡</button>
-</div>
 
+        <div class="pagination">
+          <button id="historyPrev">⬅ Previous</button>
+          <span id="historyCurrentPage">1</span>
+          <button id="historyNext">Next ➡</button>
+        </div>
       </section>
 
       <!-- Admin -->
@@ -135,6 +141,7 @@
       <!-- CEO -->
       <section id="ceo" class="tab ceo-only">
         <h2>CEO Tools</h2>
+
         <button id="generateKeyBtn">Generate Master Key</button>
         <div class="result-box">
           <p id="masterKeyDisplay"></p>
@@ -142,12 +149,24 @@
         </div>
 
         <h3>All Conversions</h3>
+
+        <div class="search-bar">
+          <input type="text" id="ceoSearchInput" placeholder="Search by text, token, or pin" />
+          <button id="ceoSearchBtn">🔍 Search</button>
+        </div>
+
         <table id="ceoHistory">
           <thead>
             <tr><th>ID</th><th>User</th><th>Text</th><th>Token</th><th>PIN</th><th>Date</th></tr>
           </thead>
           <tbody></tbody>
         </table>
+
+        <div class="pagination">
+          <button id="ceoPrev">⬅ Previous</button>
+          <span id="ceoCurrentPage">1</span>
+          <button id="ceoNext">Next ➡</button>
+        </div>
       </section>
 
     </div>

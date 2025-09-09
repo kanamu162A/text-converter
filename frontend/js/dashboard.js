@@ -218,7 +218,6 @@ async function loadAdmin(page = 1) {
   }
 }
 
-// ================= CEO PAGINATION =================
 let ceoPage = 1, ceoLimit = 10;
 
 async function loadCEO(page = 1) {
@@ -245,7 +244,6 @@ async function loadCEO(page = 1) {
   }
 }
 
-// ================= CEO MASTER KEY =================
 document.getElementById("generateKeyBtn").addEventListener("click", async () => {
   try {
     const data = await api("/api/shatova/v2/master-key", { method: "POST" });
@@ -256,7 +254,6 @@ document.getElementById("generateKeyBtn").addEventListener("click", async () => 
   }
 });
 
-// ================= TAB SWITCHING =================
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -264,13 +261,11 @@ document.querySelectorAll(".tabs button").forEach(btn => {
   });
 });
 
-// ================= LOGOUT =================
 document.getElementById("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem("shatova_token");
   window.location.href = "/login.html";
 });
 
-// ================= INIT =================
 (async () => {
   await loadProfile();
   await loadHistory();

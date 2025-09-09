@@ -300,7 +300,7 @@ pre {
 .switch-btn {
   margin-top: 15px;
   width: 100%;
-  background: #031294f3;
+  background: #02062ef3;
   color: white;
   padding: 10px;
   border-radius: 8px;
@@ -309,6 +309,6 @@ pre {
   transition: background 0.3s;
 }
 .switch-btn:hover {
-  background: #030369;
+  background: #04040a;
 }
 
