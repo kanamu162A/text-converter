@@ -4,58 +4,73 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shatova Dashboard</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+
+  <!-- Main Styles -->
   <link rel="stylesheet" href="style/dashboard.css"/>
 </head>
 <body>
   <div class="dashboard">
+    
     <!-- Header -->
     <header class="header">
       <div class="header-info">
         <h1>Welcome, <span id="username">Loading...</span> 👋</h1>
-        <p>Role: <span id="role">Loading...</span></p>
-        <p><button id="logoutBtn">Logout</button></p>
+        <p class="role-label">Role: <span id="role">Loading...</span></p>
+      </div>
+      <div class="header-actions">
+        <button id="logoutBtn" class="btn btn-danger">
+          <i class="ri-logout-box-line"></i> Logout
+        </button>
       </div>
     </header>
 
-    <!-- Tabs -->
+    <!-- Navigation Tabs -->
     <nav class="tabs">
-      <button data-tab="profile">👤 Profile</button>
-      <button data-tab="conversions">🔒 Convert</button>
-      <button data-tab="history">📜 History</button>
-      <button data-tab="admin" class="admin-only">🛠 Admin</button>
-      <button data-tab="ceo" class="ceo-only">👑 CEO</button>
+      <button data-tab="profile" class="active"><i class="ri-user-3-line"></i> Profile</button>
+      <button data-tab="conversions"><i class="ri-lock-password-line"></i> Convert</button>
+      <button data-tab="history"><i class="ri-history-line"></i> History</button>
+      <button data-tab="admin" class="admin-only"><i class="ri-shield-user-line"></i> Admin</button>
+      <button data-tab="ceo" class="ceo-only"><i class="ri-vip-crown-line"></i> CEO</button>
     </nav>
 
-    <!-- Sections -->
-    <div class="tab-content">
-      
+    <!-- Content Area -->
+    <main class="tab-content">
+
       <!-- Profile -->
       <section id="profile" class="tab active">
-        <h2>Profile</h2>
-        <p><strong>Name:</strong> <span id="profileUsername"></span></p>
-        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-        <p><strong>Created:</strong> <span id="profileCreated"></span></p>
-        <p><strong>Role:</strong> <span id="profileRole"></span></p>
+        <h2>👤 Profile</h2>
+        <ul class="info-list">
+          <li><strong>Name:</strong> <span id="profileUsername"></span></li>
+          <li><strong>Email:</strong> <span id="profileEmail"></span></li>
+          <li><strong>Created:</strong> <span id="profileCreated"></span></li>
+          <li><strong>Role:</strong> <span id="profileRole"></span></li>
+        </ul>
       </section>
 
       <!-- Conversions -->
       <section id="conversions" class="tab">
-        <h2>Text Converter</h2>
+        <h2>🔒 Text Converter</h2>
 
         <!-- Encrypt -->
         <div id="encodeSection" class="conversion-box">
           <h3>Encrypt Text</h3>
-          <textarea id="encodeInput" placeholder="Enter text"></textarea>
-          <button id="encodeBtn">🔒 Encrypt</button>
+          <textarea id="encodeInput" placeholder="Enter text here..."></textarea>
+          <button id="encodeBtn" class="btn btn-primary">Encrypt</button>
 
           <div id="encodeResultBox" class="result-box hidden">
             <div class="copy-box">
-              <span>Token: <span id="binaryOutput"></span></span>
-              <button class="copy-btn" data-target="binaryOutput">📋 Copy</button>
+              <span>Token: <code id="binaryOutput"></code></span>
+              <button class="copy-btn" data-target="binaryOutput"><i class="ri-file-copy-line"></i> Copy</button>
             </div>
             <div class="copy-box">
-              <span>PIN: <span id="pinOutput"></span></span>
-              <button class="copy-btn" data-target="pinOutput">📋 Copy</button>
+              <span>PIN: <code id="pinOutput"></code></span>
+              <button class="copy-btn" data-target="pinOutput"><i class="ri-file-copy-line"></i> Copy</button>
             </div>
           </div>
 
@@ -65,15 +80,25 @@
         <!-- Decrypt -->
         <div id="decodeSection" class="conversion-box hidden">
           <h3>Decrypt Token</h3>
-          <textarea id="decodeBinary" placeholder="Enter token"></textarea>
+          <textarea id="decodeBinary" placeholder="Enter token here..."></textarea>
           <input type="text" id="decodePin" placeholder="Enter PIN"/>
-          <input type="text" id="decodeLangs" placeholder="Languages (e.g. en, ha, ar)"/>
-          <button id="decodeBtn">🔓 Decrypt</button>
+
+          <!-- Language Selection -->
+          <select>
+            <option value="">No translation</option>
+            <option value="en">English</option>
+            <option value="ar">Arabic</option>
+            <option value="ha">Hausa</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+          </select>
+
+          <button id="decodeBtn" class="btn btn-success">Decrypt</button>
 
           <div id="decodeResultBox" class="result-box hidden">
             <label>Decrypted Text:</label>
             <pre id="decodeResult"></pre>
-            <button class="copy-btn" data-target="decodeResult">📋 Copy</button>
+            <button class="copy-btn" data-target="decodeResult"><i class="ri-file-copy-line"></i> Copy</button>
           </div>
 
           <button id="switchToEncode" class="switch-btn">Switch to Encrypt 🔒</button>
@@ -82,94 +107,103 @@
 
       <!-- History -->
       <section id="history" class="tab">
-        <h2>My History</h2>
-
+        <h2>📜 My History</h2>
         <div class="search-bar">
-          <input type="text" id="userSearchInput" placeholder="Search by text, token, or pin" />
-          <button id="userSearchBtn">🔍 Search</button>
+          <input type="text" id="userSearchInput" placeholder="Search by token only..." />
+          <button id="userSearchBtn" class="btn btn-secondary"><i class="ri-search-line"></i> Search</button>
         </div>
 
-        <table id="historyTable">
-          <thead>
-            <tr>
-              <th>SN</th>
-              <th>Text</th>
-              <th>Token</th>
-              <th>PIN</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>SN</th>
+                <th>Text</th>
+                <th>Token</th>
+                <th>PIN</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
         <div class="pagination">
-          <button id="historyPrev">⬅ Previous</button>
+          <button id="historyPrev" class="btn">⬅ Previous</button>
           <span id="historyCurrentPage">1</span>
-          <button id="historyNext">Next ➡</button>
+          <button id="historyNext" class="btn">Next ➡</button>
         </div>
       </section>
 
       <!-- Admin -->
       <section id="admin" class="tab admin-only">
-        <h2>Admin Panel</h2>
+        <h2>🛠 Admin Panel</h2>
 
         <h3>Users</h3>
-        <table id="usersTable">
-          <thead>
-            <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Created</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table id="usersTable">
+            <thead>
+              <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
         
         <h3>Conversions</h3>
-        <table id="adminConversions">
-          <thead>
-            <tr><th>ID</th><th>User</th><th>Token</th><th>Date</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table id="adminConversions">
+            <thead>
+              <tr><th>ID</th><th>User</th><th>Token</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
         <h3>Audit Logs</h3>
-        <table id="auditLogs">
-          <thead>
-            <tr><th>ID</th><th>Action</th><th>User</th><th>Date</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table id="auditLogs">
+            <thead>
+              <tr><th>ID</th><th>Action</th><th>User</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </section>
 
       <!-- CEO -->
       <section id="ceo" class="tab ceo-only">
-        <h2>CEO Tools</h2>
+        <h2>👑 CEO Tools</h2>
+        <button id="generateKeyBtn" class="btn btn-warning">
+          <i class="ri-key-line"></i> Generate Master Key
+        </button>
 
-        <button id="generateKeyBtn">Generate Master Key</button>
         <div class="result-box">
           <p id="masterKeyDisplay"></p>
-          <button class="copy-btn" data-target="masterKeyDisplay">📋 Copy</button>
+          <button class="copy-btn" data-target="masterKeyDisplay"><i class="ri-file-copy-line"></i> Copy</button>
         </div>
 
         <h3>All Conversions</h3>
-
         <div class="search-bar">
-          <input type="text" id="ceoSearchInput" placeholder="Search by text, token, or pin" />
-          <button id="ceoSearchBtn">🔍 Search</button>
+          <input type="text" id="ceoSearchInput" placeholder="Search by token only..." />
+          <button id="ceoSearchBtn" class="btn btn-secondary"><i class="ri-search-line"></i> Search</button>
         </div>
 
-        <table id="ceoHistory">
-          <thead>
-            <tr><th>ID</th><th>User</th><th>Text</th><th>Token</th><th>PIN</th><th>Date</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table id="ceoHistory">
+            <thead>
+              <tr><th>ID</th><th>User</th><th>Text</th><th>Token</th><th>PIN</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
         <div class="pagination">
-          <button id="ceoPrev">⬅ Previous</button>
+          <button id="ceoPrev" class="btn">⬅ Previous</button>
           <span id="ceoCurrentPage">1</span>
-          <button id="ceoNext">Next ➡</button>
+          <button id="ceoNext" class="btn">Next ➡</button>
         </div>
       </section>
-
-    </div>
+    </main>
   </div>
 
   <script src="js/dashboard.js"></script>
