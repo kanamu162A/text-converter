@@ -1,38 +1,26 @@
-// ================= IMPORTS =================
 import express from "express";
 import pool from "../Config/db.js";
-import translate from "@vitalets/google-translate-api"; // ✅ correct import
+import { translate } from "@vitalets/google-translate-api";
 import crypto from "crypto";
 
 const router = express.Router();
 
-// ================= UTILITIES =================
-
-// Generate random numeric PIN
+// ================= GENERATE RANDOM PIN =================
 function generatePin(length = 4) {
   const digits = "0123456789";
-  return Array.from({ length }, () =>
-    digits[Math.floor(Math.random() * digits.length)]
-  ).join("");
+  return Array.from({ length }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
 }
 
-// Safe translation with retries + clean fallback
-async function safeTranslate(text, lang, retries = 3) {
+// ================= SAFE TRANSLATION =================
+async function safeTranslate(text, lang, retries = 2) {
   for (let i = 0; i < retries; i++) {
     try {
-      const result = await translate(text, { to: lang });
-
-      if (result && result.text && result.text.trim() !== "") {
-        return result.text.trim();
-      }
+      const translated = await translate(text, { to: lang });
+      return translated.text;
     } catch (err) {
-      if (i === retries - 1) {
-        console.error(`❌ Translation failed for "${text}" -> ${lang}:`, err.message);
-        return null; // Return null if fully failed
-      }
+      if (i === retries - 1) return `Translation failed: ${err.message}`;
     }
   }
-  return null;
 }
 
 // ================= ENCODE TEXT =================
@@ -43,26 +31,21 @@ export const encodeText = async (req, res) => {
 
     const pin = generatePin();
 
-    // Convert text into binary with PIN offset
     let binaryArr = text.split("").map((char, i) => {
       let code = char.charCodeAt(0) + parseInt(pin[i % pin.length]);
       return code.toString(2);
     });
     let rawBinary = binaryArr.join(" ");
 
-    // Hash and shorten
     let hash = crypto.createHash("sha256").update(rawBinary).digest("hex");
     let fixedBinary = hash.slice(0, length);
 
-    // ⚠️ Store hashed PIN for security
-    const pinHash = crypto.createHash("sha256").update(pin).digest("hex");
-
     await pool.query(
       "INSERT INTO conversions (user_id, original_text, binary_output, pin_hash) VALUES ($1, $2, $3, $4)",
-      [req.user.id, text, fixedBinary, pinHash]
+      [req.user.id, text, fixedBinary, pin]
     );
 
-    res.json({ binary_output: fixedBinary, pin }); // Return raw pin only to user
+    res.json({ binary_output: fixedBinary, pin });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,11 +59,9 @@ export const decodeText = async (req, res) => {
       return res.status(400).json({ error: "Binary output and pin are required" });
     }
 
-    const pinHash = crypto.createHash("sha256").update(pin).digest("hex");
-
     const result = await pool.query(
       "SELECT original_text FROM conversions WHERE binary_output=$1 AND pin_hash=$2 LIMIT 1",
-      [binary_output, pinHash]
+      [binary_output, pin]
     );
 
     if (result.rows.length === 0) {
@@ -92,8 +73,7 @@ export const decodeText = async (req, res) => {
     const translations = {};
 
     for (const lang of langs) {
-      const translated = await safeTranslate(decoded, lang);
-      translations[lang] = translated || "Translation unavailable";
+      translations[lang] = await safeTranslate(decoded, lang);
     }
 
     return res.json({
@@ -109,13 +89,13 @@ export const decodeText = async (req, res) => {
 // ================= GENERATE MASTER KEY =================
 export const generateMasterKey = async (req, res) => {
   try {
-    const user = req.user;
+    const user = req.user || req.body;
     if (!user || user.role !== "ceo") {
       return res.status(403).json({ success: false, error: "Only CEO can generate master key" });
     }
 
     const keyValue = crypto.randomBytes(16).toString("hex");
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await pool.query(
       "INSERT INTO master_keys (key_value, expires_at, created_by) VALUES ($1, $2, $3)",
@@ -170,11 +150,12 @@ async function searchConversionsByToken({ userId, token, isCEO = false }) {
     values.push(userId);
   }
 
+  // ✅ Fast search using trigram index
   conditions.push(`c.binary_output ILIKE $${index++}`);
   values.push(`%${token}%`);
 
   const sql = `
-    SELECT c.id, u.email, c.original_text, c.binary_output, c.created_at
+    SELECT c.id, u.email, c.original_text, c.binary_output, c.pin_hash, c.created_at
     FROM conversions c
     JOIN users u ON c.user_id = u.id
     WHERE ${conditions.join(" AND ")}
@@ -209,5 +190,3 @@ export const searchAllConversionsAsCEO = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
-export default router;
