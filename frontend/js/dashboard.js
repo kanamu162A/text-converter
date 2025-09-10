@@ -65,12 +65,16 @@ document.getElementById("encodeBtn").addEventListener("click", async () => {
   }
 });
 
+// ================= DECODE =================
 document.getElementById("decodeBtn").addEventListener("click", async () => {
   const binary = document.getElementById("decodeBinary").value.trim();
   const pin = document.getElementById("decodePin").value.trim();
-  const langs = document.getElementById("decodeLangs").value.split(",").map(l => l.trim()).filter(Boolean);
+  const lang = document.getElementById("languageSelect").value;
 
-  if (!binary || !pin) return alert("Binary and PIN are required!");
+  if (!binary || !pin) {
+    alert("❌ Binary and PIN are required!");
+    return;
+  }
 
   const resultBox = document.getElementById("decodeResultBox");
   const resultEl = document.getElementById("decodeResult");
@@ -81,11 +85,32 @@ document.getElementById("decodeBtn").addEventListener("click", async () => {
   try {
     const data = await api("/api/shatova/v2/conversions/decode", {
       method: "POST",
-      body: JSON.stringify({ binary_output: binary, pin, languages: langs })
+      body: JSON.stringify({
+        binary_output: binary,
+        pin,
+        languages: lang ? [lang] : ["en"]
+      })
     });
-    resultEl.textContent = data.original_text || "❌ Failed to decrypt";
-  } catch {
-    resultEl.textContent = "❌ Error decoding!";
+
+    if (!data || !data.original_text) {
+      resultEl.textContent = "❌ Failed to decrypt";
+      return;
+    }
+
+    let translationsText = "";
+    if (data.translations && typeof data.translations === "object") {
+      translationsText = Object.entries(data.translations)
+        .map(([l, txt]) => `<b>${l.toUpperCase()}:</b> ${txt}`)
+        .join("<br>");
+    }
+
+    resultEl.innerHTML = `
+      <p><b>Original:</b> ${data.original_text}</p>
+      ${translationsText ? `<p><b>Translations:</b><br>${translationsText}</p>` : ""}
+    `;
+  } catch (err) {
+    console.error("Decode API failed:", err);
+    resultEl.textContent = "❌ Error decoding! " + err.message;
   }
 });
 
@@ -107,9 +132,9 @@ document.addEventListener("click", e => {
   if (!el) return;
 
   navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
-    const original = e.target.textContent;
-    e.target.textContent = "✅ Copied!";
-    setTimeout(() => (e.target.textContent = original), 1500);
+    const original = e.target.innerHTML;
+    e.target.innerHTML = "✅ Copied!";
+    setTimeout(() => (e.target.innerHTML = original), 1500);
   });
 });
 
@@ -128,7 +153,7 @@ function renderTable(tbodySelector, data, page, limit, columns) {
   });
 }
 
-// ================= HISTORY =================
+// ================= HISTORY (with cache + preload) =================
 const historyPager = createPager(10);
 
 async function loadHistory(page = 1) {
@@ -150,10 +175,10 @@ async function loadHistory(page = 1) {
 function renderHistory(data) {
   renderTable("#historyTable tbody", data.conversions, historyPager.page, historyPager.limit, [
     (_, idx) => idx,
-    h => h.text,
-    h => h.binary,
-    h => h.pin,
-    h => new Date(h.date).toLocaleString()
+    h => h.original_text || h.text,
+    h => h.binary_output || h.binary,
+    h => h.pin_hash || h.pin,
+    h => new Date(h.created_at || h.date).toLocaleString()
   ]);
 
   const totalPages = Math.ceil(data.total / historyPager.limit);
@@ -165,7 +190,9 @@ function renderHistory(data) {
 function preloadHistory(page, total) {
   const totalPages = Math.ceil(total / historyPager.limit);
   if (page <= totalPages && !historyPager.cache[page]) {
-    api(`/api/shatova/v2/admin/history?page=${page}&limit=${historyPager.limit}`).then(d => (historyPager.cache[page] = d)).catch(() => {});
+    api(`/api/shatova/v2/admin/history?page=${page}&limit=${historyPager.limit}`)
+      .then(d => (historyPager.cache[page] = d))
+      .catch(() => {});
   }
 }
 
@@ -242,10 +269,10 @@ function renderCEO(data) {
   renderTable("#ceoHistory tbody", data.conversions, ceoPager.page, ceoPager.limit, [
     (_, idx) => idx,
     h => h.user || h.username || h.email || "N/A",
-    h => h.text || h.original_text || "N/A",
-    h => h.binary || h.binary_output || "N/A",
-    h => h.pin || h.pin_hash || "N/A",
-    h => new Date(h.date || h.created_at).toLocaleString()
+    h => h.original_text || h.text || "N/A",
+    h => h.binary_output || h.binary || "N/A",
+    h => h.pin_hash || h.pin || "N/A",
+    h => new Date(h.created_at || h.date).toLocaleString()
   ]);
 
   const totalPages = Math.ceil(data.total / ceoPager.limit);
@@ -257,7 +284,9 @@ function renderCEO(data) {
 function preloadCEO(page, total) {
   const totalPages = Math.ceil(total / ceoPager.limit);
   if (page <= totalPages && !ceoPager.cache[page]) {
-    api(`/api/shatova/v2/admin/all/history?page=${page}&limit=${ceoPager.limit}`).then(d => (ceoPager.cache[page] = d)).catch(() => {});
+    api(`/api/shatova/v2/admin/all/history?page=${page}&limit=${ceoPager.limit}`)
+      .then(d => (ceoPager.cache[page] = d))
+      .catch(() => {});
   }
 }
 
@@ -268,7 +297,8 @@ document.getElementById("ceoNext").addEventListener("click", () => loadCEO(ceoPa
 document.getElementById("generateKeyBtn").addEventListener("click", async () => {
   try {
     const data = await api("/api/shatova/v2/master-key", { method: "POST" });
-    document.getElementById("masterKeyDisplay").textContent = `Key: ${data.master_key} (expires ${new Date(data.expires_at).toLocaleString()})`;
+    document.getElementById("masterKeyDisplay").textContent =
+      `Key: ${data.master_key} (expires ${new Date(data.expires_at).toLocaleString()})`;
   } catch (err) {
     console.error("Failed to generate master key:", err.message);
   }
@@ -291,28 +321,13 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 // ================== SEARCH (USER SIDE) ==================
 document.getElementById("userSearchBtn").addEventListener("click", async () => {
   const token = document.getElementById("userSearchInput").value.trim();
-
-  if (!token) {
-    alert("❌ Token is required");
-    return;
-  }
+  if (!token) return alert("❌ Token is required");
 
   try {
-    const res = await fetch("/api/shatova/v2/conversions/search", {
+    const data = await api("/api/shatova/v2/conversions/search", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("shatova_token")}`,
-      },
       body: JSON.stringify({ token }),
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "❌ No results found");
-      return;
-    }
 
     const tbody = document.querySelector("#historyTable tbody");
     tbody.innerHTML = "";
@@ -334,37 +349,21 @@ document.getElementById("userSearchBtn").addEventListener("click", async () => {
   }
 });
 
-
 // ================== SEARCH (CEO SIDE) ==================
 document.getElementById("ceoSearchBtn").addEventListener("click", async () => {
   const token = document.getElementById("ceoSearchInput").value.trim();
-
-  if (!token) {
-    alert("❌ Token is required");
-    return;
-  }
+  if (!token) return alert("❌ Token is required");
 
   try {
-    const res = await fetch("/api/shatova/V2/conversions/admin/search", {
+    const data = await api("/api/shatova/v2/conversions/admin/search", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("shatova_token")}`,
-      },
       body: JSON.stringify({ token }),
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "❌ No results found");
-      return;
-    }
 
     const tbody = document.querySelector("#ceoHistory tbody");
     tbody.innerHTML = "";
 
-    data.conversions.forEach((conv, i) => {
+    data.conversions.forEach(conv => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${conv.id}</td>

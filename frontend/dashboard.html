@@ -4,20 +4,20 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shatova Dashboard</title>
-  
+
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css"/>
 
   <!-- Main Styles -->
   <link rel="stylesheet" href="style/dashboard.css"/>
 </head>
 <body>
   <div class="dashboard">
-    
-    <!-- Header -->
+
+    <!-- ================= HEADER ================= -->
     <header class="header">
       <div class="header-info">
         <h1>Welcome, <span id="username">Loading...</span> 👋</h1>
@@ -30,7 +30,7 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- ================= NAVIGATION ================= -->
     <nav class="tabs">
       <button data-tab="profile" class="active"><i class="ri-user-3-line"></i> Profile</button>
       <button data-tab="conversions"><i class="ri-lock-password-line"></i> Convert</button>
@@ -39,28 +39,28 @@
       <button data-tab="ceo" class="ceo-only"><i class="ri-vip-crown-line"></i> CEO</button>
     </nav>
 
-    <!-- Content Area -->
+    <!-- ================= MAIN CONTENT ================= -->
     <main class="tab-content">
 
-      <!-- Profile -->
+      <!-- PROFILE TAB -->
       <section id="profile" class="tab active">
         <h2>👤 Profile</h2>
         <ul class="info-list">
-          <li><strong>Name:</strong> <span id="profileUsername"></span></li>
-          <li><strong>Email:</strong> <span id="profileEmail"></span></li>
-          <li><strong>Created:</strong> <span id="profileCreated"></span></li>
-          <li><strong>Role:</strong> <span id="profileRole"></span></li>
+          <li><strong>Name:</strong> <span id="profileUsername">Loading...</span></li>
+          <li><strong>Email:</strong> <span id="profileEmail">Loading...</span></li>
+          <li><strong>Created:</strong> <span id="profileCreated">Loading...</span></li>
+          <li><strong>Role:</strong> <span id="profileRole">Loading...</span></li>
         </ul>
       </section>
 
-      <!-- Conversions -->
+      <!-- CONVERSIONS TAB -->
       <section id="conversions" class="tab">
         <h2>🔒 Text Converter</h2>
 
-        <!-- Encrypt -->
+        <!-- ENCRYPT -->
         <div id="encodeSection" class="conversion-box">
           <h3>Encrypt Text</h3>
-          <textarea id="encodeInput" placeholder="Enter text here..."></textarea>
+          <textarea id="encodeInput" placeholder="Enter text here..." aria-label="Text to encrypt"></textarea>
           <button id="encodeBtn" class="btn btn-primary">Encrypt</button>
 
           <div id="encodeResultBox" class="result-box hidden">
@@ -77,15 +77,15 @@
           <button id="switchToDecode" class="switch-btn">Switch to Decrypt 🔓</button>
         </div>
 
-        <!-- Decrypt -->
+        <!-- DECRYPT -->
         <div id="decodeSection" class="conversion-box hidden">
           <h3>Decrypt Token</h3>
-          <textarea id="decodeBinary" placeholder="Enter token here..."></textarea>
-          <input type="text" id="decodePin" placeholder="Enter PIN"/>
+          <textarea id="decodeBinary" placeholder="Enter token here..." aria-label="Token to decrypt"></textarea>
+          <input type="text" id="decodePin" placeholder="Enter PIN" aria-label="Decryption PIN"/>
 
-          <!-- Language Selection -->
-          <select>
-            <option value="">No translation</option>
+          <label for="languageSelect">Translation:</label>
+          <select id="languageSelect">
+            <option value="">Select translation</option>
             <option value="en">English</option>
             <option value="ar">Arabic</option>
             <option value="ha">Hausa</option>
@@ -105,11 +105,12 @@
         </div>
       </section>
 
-      <!-- History -->
+      <!-- HISTORY TAB -->
       <section id="history" class="tab">
         <h2>📜 My History</h2>
+
         <div class="search-bar">
-          <input type="text" id="userSearchInput" placeholder="Search by token only..." />
+          <input type="text" id="userSearchInput" placeholder="Search by token only..." aria-label="Search history"/>
           <button id="userSearchBtn" class="btn btn-secondary"><i class="ri-search-line"></i> Search</button>
         </div>
 
@@ -135,7 +136,7 @@
         </div>
       </section>
 
-      <!-- Admin -->
+      <!-- ADMIN TAB -->
       <section id="admin" class="tab admin-only">
         <h2>🛠 Admin Panel</h2>
 
@@ -170,9 +171,10 @@
         </div>
       </section>
 
-      <!-- CEO -->
+      <!-- CEO TAB -->
       <section id="ceo" class="tab ceo-only">
         <h2>👑 CEO Tools</h2>
+
         <button id="generateKeyBtn" class="btn btn-warning">
           <i class="ri-key-line"></i> Generate Master Key
         </button>
@@ -184,7 +186,7 @@
 
         <h3>All Conversions</h3>
         <div class="search-bar">
-          <input type="text" id="ceoSearchInput" placeholder="Search by token only..." />
+          <input type="text" id="ceoSearchInput" placeholder="Search by token only..." aria-label="CEO search"/>
           <button id="ceoSearchBtn" class="btn btn-secondary"><i class="ri-search-line"></i> Search</button>
         </div>
 
@@ -206,6 +208,7 @@
     </main>
   </div>
 
+  <!-- Dashboard Script -->
   <script src="js/dashboard.js"></script>
 </body>
 </html>
